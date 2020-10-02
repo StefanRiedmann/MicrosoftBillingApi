@@ -18,7 +18,7 @@ namespace BillingApiSdk.Services
     public interface IBillingApiService
     {
         Task<MicrosoftPurchase> ResolvePurchase(string marketplaceToken);
-        Task<List<MicrosoftSubscription>> GetAllSubscriptions();
+        Task<List<MicrosoftSubscription>> GetAllSubscriptions(bool mock = false);
         Task<MicrosoftSubscription> GetSubscription(string subscriptionId);
         Task ActivateSubscription(string subscriptionId);
         Task<List<MicrosoftOperation>> GetPendingOperations(string subscriptionId);
@@ -79,11 +79,11 @@ namespace BillingApiSdk.Services
             }
         }
 
-        public async Task<List<MicrosoftSubscription>> GetAllSubscriptions()
+        public async Task<List<MicrosoftSubscription>> GetAllSubscriptions(bool mock = false)
         {
-            var api = GetApiVersion(null, null);
-            using var httpClient = await GetMsSaasSubscriptionClient(null, null, !api.isMock);
-            var link = $"https://marketplaceapi.microsoft.com/api/saas/subscriptions/?api-version={api.apiVersion}";
+            var apiVersion = mock ? mockApiVersion : productionApiVersion;
+            using var httpClient = await GetMsSaasSubscriptionClient(null, null, !mock);
+            var link = $"https://marketplaceapi.microsoft.com/api/saas/subscriptions/?api-version={apiVersion}";
 
             var result = new List<MicrosoftSubscription>();
             while (!string.IsNullOrEmpty(link))
@@ -112,6 +112,15 @@ namespace BillingApiSdk.Services
                 {
                     throw new ApplicationException($"Error deserializaing list of MicrosoftSubscription, link: {link}", ex);
                 }
+            }
+            if (mock)
+            {
+                result.ForEach(r =>
+                {
+                    r.Beneficiary.EmailId = config.MsMockAccount;
+                    r.PlanId = "moondeskteam";
+                    r.IsFreeTrial = true;
+                });
             }
             return result;
         }
@@ -280,7 +289,7 @@ namespace BillingApiSdk.Services
             }
             else if (!string.IsNullOrEmpty(subscriptionId))
             {
-                mock = mock && subscriptionId == config.MsMockSubscriptionId;
+                mock = mock && subscriptionId == "37f9dea2-4345-438f-b0bd-03d40d28c7e0"; // The mock api works with this id
             }
             else
             {

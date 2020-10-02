@@ -13,11 +13,6 @@
         /// </summary>
         public string MsMockAccount { get; set; }
         /// <summary>
-        /// Could be hard coded. The mock api works with this
-        /// subscription id.
-        /// </summary>
-        public string MsMockSubscriptionId { get; set; }
-        /// <summary>
         /// Your TenantId from ActiveDirectory. Needed when your not mocking.
         /// </summary>
         public string TenantId { get; set; }

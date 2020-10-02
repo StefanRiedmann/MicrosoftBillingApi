@@ -18,8 +18,7 @@ namespace BillingApiSdk.Tests.Services
         private static BillingApiConfiguration configuration = new BillingApiConfiguration
         {
             ActivateMsMockAccount = true,
-            MsMockAccount = "someone@abc.com",
-            MsMockSubscriptionId = "37f9dea2-4345-438f-b0bd-03d40d28c7e0"
+            MsMockAccount = "someone@abc.com"
         };
 
         private IBillingApiService _fixture;

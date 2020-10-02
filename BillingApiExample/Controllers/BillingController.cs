@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using BillingApiSdk.Models;
 using BillingApiSdk.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +20,8 @@ namespace BillingApiExample.Controllers
         [HttpGet("[action]")]
         public async Task<MicrosoftSubscription> ResolvePurchase([FromQuery] string billingToken)
         {
-            var result = await service.ResolvePurchase(billingToken);
-            var subsription = await service.GetSubscription(result.SubscriptionId);
+            var p = await service.ResolvePurchase(billingToken);
+            var subsription = await service.GetSubscription(p.SubscriptionId);
             return subsription;
         }
 
@@ -34,6 +35,13 @@ namespace BillingApiExample.Controllers
             // ...
 
             await service.ActivateSubscription(subscription.SubscriptionId);
+        }
+
+        [HttpGet("[action]")]
+        public async Task<List<MicrosoftSubscription>> GetAllSubscriptions([FromQuery] bool mock = false)
+        {
+            var result = await service.GetAllSubscriptions(mock);
+            return result;
         }
 
         [HttpPost("[action]")]
