@@ -17,12 +17,47 @@ namespace BillingApiSdk.Services
     /// </summary>
     public interface IBillingApiService
     {
+        /// <summary>
+        /// The resolve endpoint enables the publisher to exchange the marketplace purchase identification token
+        /// to a persistent purchased SaaS subscription ID and its details.
+        /// </summary>
         Task<MicrosoftPurchase> ResolvePurchase(string marketplaceToken);
+
+        /// <summary>
+        /// Retrieves a list of all purchased SaaS subscriptions for all offers published by the publisher in marketplace. 
+        /// SaaS subscriptions in all possible statuses will be returned. 
+        /// Unsubscribed SaaS subscriptions are also returned, as this information is not deleted on Microsoft side.
+        /// </summary>
+        /// <param name="mock">To test it using the mocking api</param>
         Task<List<MicrosoftSubscription>> GetAllSubscriptions(bool mock = false);
+
+        /// <summary>
+        /// Retrieves a specified purchased SaaS subscription for a SaaS offer published in the marketplace by the publisher. 
+        /// Use this call to get all available information for a specific SaaS subscription by its ID 
+        /// rather than calling the API for getting list of all subscriptions.
+        /// </summary>
         Task<MicrosoftSubscription> GetSubscription(string subscriptionId);
+
+        /// <summary>
+        /// Once the SaaS account is configured for an end customer, the publisher must call the Activate Subscription API on Microsoft side. 
+        /// The customer will not be billed unless this API call is successful.
+        /// </summary>
         Task ActivateSubscription(string subscriptionId);
+
+        /// <summary>
+        /// Get list of the pending operations for the specified SaaS subscription. Returned operations should be acknowledged 
+        /// by the publisher by calling the Operation patch API.
+        /// Currently only Reinstate operations are returned as response for this API call.
+        /// </summary>
         Task<List<MicrosoftOperation>> GetPendingOperations(string subscriptionId);
+
+        /// <summary>
+        /// Enables the publisher to track the status of the specified async operation: Unsubscribe, ChangePlan, or ChangeQuantity.
+        /// The operationId for this API call can be retrieved from the value returned by Operation-Location, get pending operations API call, 
+        /// or the<id> parameter value received in a webhook call.
+        /// </summary>
         Task<MicrosoftOperation> GetOperationStatus(string subscriptionId, string operationId);
+
         /// <summary>
         /// Update the status of a pending operation to indicate the operation's success or failure 
         /// on the publisher side.
