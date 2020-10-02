@@ -1,42 +1,34 @@
 {
-    "id": "<guid>",
-    "subscriptionName": "Contoso Cloud Solution",
-    "offerId": "offer1",
-    "planId": "silver",
-    "quantity": "20",
-    "subscription": 
-    {
-        "id": "<guid>",
-        "publisherId": "contoso",
-        "offerId": "offer1",
-        "name": "Contoso Cloud Solution",
-        "saasSubscriptionStatus": " PendingFulfillmentStart ",
-        "beneficiary": {
-            "emailId": "test@test.com",
-            "objectId": "<guid>",
-            "tenantId": "<guid>",
-            "pid": "<ID of the user>"
-        },
-        "purchaser": {
-            "emailId": "test@test.com",
-            "objectId": "<guid>",
-            "tenantId": "<guid>",
-            "pid": "<ID of the user>"
-        },
-        "planId": "silver",
-        "term": {
-            "termUnit": "P1M",
-            "startDate": "2019-05-31",
-            "endDate": "2019-06-29"
-        },
-        "isTest": true,
-        "isFreeTrial": false,
-        "allowedCustomerOperations": [
-            "Delete",
-            "Update",
-            "Read"
-        ],
-        "sandboxType": "None",
-        "sessionMode": "None"
-    }
+      "id": "<guid>",
+      "publisherId": "contoso",
+      "offerId": "offer1",
+      "name": "Contoso Cloud Solution",
+      "saasSubscriptionStatus": " PendingFulfillmentStart ",
+      "beneficiary": {
+          "emailId": "test@test.com",
+          "objectId": "<guid>",
+          "tenantId": "<guid>",
+          "pid": "<ID of the user>"
+      },
+      "purchaser": {
+          "emailId": "test@test.com",
+          "objectId": "<guid>",
+          "tenantId": "<guid>",
+          "pid": "<ID of the user>"
+      },
+      "planId": "silver",
+      "term": {
+          "termUnit": "P1M",
+          "startDate": "2019-05-31",
+          "endDate": "2019-06-29"
+      },
+      "isTest": true,
+      "isFreeTrial": false,
+      "allowedCustomerOperations": [
+          "Delete",
+          "Update",
+          "Read"
+      ],
+      "sandboxType": "None",
+      "sessionMode": "None"
 }

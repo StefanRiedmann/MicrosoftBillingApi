@@ -1,0 +1,12 @@
+﻿{
+  "id": "operationId1",
+  "activityId": "activityId1",
+  "subscriptionId": "37f9dea2-4345-438f-b0bd-03d40d28c7e0",
+  "publisherId": "mycompany",
+  "offerId": "offer1",
+  "planId": "silver",
+  "quantity": " 25",
+  "timeStamp": "2019-04-15T20:17:31.7350641Z",
+  "action": "ChangeQuantity",
+  "status": "Success"
+}

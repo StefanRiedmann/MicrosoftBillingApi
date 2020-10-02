@@ -1,0 +1,7 @@
+{
+    "id": "<guid>",
+    "subscriptionName": "Contoso Cloud Solution",
+    "offerId": "offer1",
+    "planId": "silver",
+    "quantity": "20"
+}
