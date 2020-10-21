@@ -20,7 +20,7 @@
     "BillingApiExample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/billing/resolvepurchase?billingToken=mock",
+      "launchUrl": "api/billing/resolvepurchase?mktplaceToken=mock",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

@@ -43,7 +43,7 @@ namespace BillingApiSdk.Tests.Services
         {
             Task.Run(async () =>
             {
-                var result = await _fixture.GetAllSubscriptions();
+                var result = await _fixture.GetAllSubscriptions(true);
                 Assert.NotNull(result);
             }).GetAwaiter().GetResult();
         }

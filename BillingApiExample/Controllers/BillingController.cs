@@ -18,17 +18,17 @@ namespace BillingApiExample.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<MicrosoftSubscription> ResolvePurchase([FromQuery] string billingToken)
+        public async Task<MicrosoftSubscription> ResolvePurchase([FromQuery] string mktplaceToken)
         {
-            var p = await service.ResolvePurchase(billingToken);
+            var p = await service.ResolvePurchase(mktplaceToken);
             var subsription = await service.GetSubscription(p.SubscriptionId);
             return subsription;
         }
 
         [HttpPost("[action]")]
-        public async Task ActivateSubscription([FromQuery] string billingToken)
+        public async Task ActivateSubscription([FromQuery] string mktplaceToken)
         {
-            var purchase = await service.ResolvePurchase(billingToken);
+            var purchase = await service.ResolvePurchase(mktplaceToken);
             var subscription = await service.GetSubscription(purchase.SubscriptionId);
             // ToDo: Before activing the subscription on Microsoft side, you
             // have to configure your users account accordingly
