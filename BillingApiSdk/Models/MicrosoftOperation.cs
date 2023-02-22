@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 
 namespace BillingApiSdk.Models
@@ -69,7 +70,8 @@ namespace BillingApiSdk.Models
         /// - Unsubscribe
         /// </summary>
         [JsonProperty("action")]
-        public string Action { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public MicrosoftOperationAction Action { get; set; }
 
         [JsonProperty("timeStamp")]
         public DateTime TimeStampUtc { get; set; }

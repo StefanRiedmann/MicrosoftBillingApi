@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 
 namespace BillingApiSdk.Models
@@ -93,12 +94,20 @@ namespace BillingApiSdk.Models
         /// - Unsubscribe
         /// </summary>
         [JsonProperty("action")]
-        public string Action { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public MicrosoftOperationAction Action { get; set; }
 
         /// <summary>
         /// Can be either InProgress or Success
         /// </summary>
         [JsonProperty("status")]
         public string Status { get; set; }
+
+        /// <summary>
+        /// The source of the operation request. 
+        /// </summary>
+        [JsonProperty("operationRequestSource")]
+        public string OperationRequestSource { get; set; }        
+
     }
 }
