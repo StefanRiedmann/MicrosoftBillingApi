@@ -9,6 +9,9 @@ namespace BillingApiSdk.Tests.Services
 
     public class BillingApiServiceTests
     {
+        private const string MockSubscriptionId = "37f9dea2-4345-438f-b0bd-03d40d28c7e0";
+        private const string MockOperationId = "74dfb4db-c193-4891-827d-eb05fbdc64b0";
+
         /// <summary>
         /// I know I know, configuration has to be solved in a better way.
         /// You have two options
@@ -53,9 +56,17 @@ namespace BillingApiSdk.Tests.Services
         {
             Task.Run(async () =>
             {
-                // mock subscription id: 37f9dea2-4345-438f-b0bd-03d40d28c7e0
-                var result = await _fixture.GetSubscription("37f9dea2-4345-438f-b0bd-03d40d28c7e0");
+                var result = await _fixture.GetSubscription(MockSubscriptionId);
                 Assert.NotNull(result);
+            }).GetAwaiter().GetResult();
+        }
+
+        [Fact]
+        public void DeleteSubscription_MockApiTest()
+        {
+            Task.Run(async () =>
+            {
+                await _fixture.DeleteSubscription(MockSubscriptionId);
             }).GetAwaiter().GetResult();
         }
 
@@ -64,8 +75,7 @@ namespace BillingApiSdk.Tests.Services
         {
             Task.Run(async () =>
             {
-                // mock subscription id: 37f9dea2-4345-438f-b0bd-03d40d28c7e0
-                var result = await _fixture.GetPendingOperations("37f9dea2-4345-438f-b0bd-03d40d28c7e0");
+                var result = await _fixture.GetPendingOperations(MockSubscriptionId);
                 Assert.NotEmpty(result);
             }).GetAwaiter().GetResult();
         }
@@ -75,8 +85,7 @@ namespace BillingApiSdk.Tests.Services
         {
             Task.Run(async () =>
             {
-                // mock subscription id: 37f9dea2-4345-438f-b0bd-03d40d28c7e0
-                var result = await _fixture.GetOperationStatus("37f9dea2-4345-438f-b0bd-03d40d28c7e0", "74dfb4db-c193-4891-827d-eb05fbdc64b0");
+                var result = await _fixture.GetOperationStatus(MockSubscriptionId, MockOperationId);
                 Assert.NotNull(result);
             }).GetAwaiter().GetResult();
         }

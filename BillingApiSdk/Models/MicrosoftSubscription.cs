@@ -109,6 +109,12 @@ namespace BillingApiSdk.Models
         public MicrosoftTerm Term { get; set; }
 
         /// <summary>
+        /// Indicating whether the subscription will renew automatically.
+        /// </summary>
+        [JsonProperty("autoRenew")]
+        public bool AutoRenew { get; set; }
+
+        /// <summary>
         /// not relevant
         /// </summary>
         [JsonProperty("isTest")]
@@ -129,10 +135,28 @@ namespace BillingApiSdk.Models
         public List<string> AllowedCustomerOperations { get; set; }
 
         /// <summary>
+        /// The ID of the session that created the subscription.
+        /// </summary>
+        [JsonProperty("sessionId")]
+        public string SessionId { get; set; }
+
+        /// <summary>
+        /// The ID of the fulfillment operation that created the subscription.
+        /// </summary>
+        [JsonProperty("fulfillmentId")]
+        public string FulfillmentId { get; set; }
+
+        /// <summary>
         /// not relevant
         /// </summary>
         [JsonProperty("sandboxType")]
         public string SandboxType { get; set; }
+
+        /// <summary>
+        /// The date and time when the subscription was created.
+        /// </summary>
+        [JsonProperty("created")]
+        public DateTime CreatedDateUtc { get; set; }
 
         /// <summary>
         /// not relevant
@@ -176,7 +200,7 @@ namespace BillingApiSdk.Models
         /// <summary>
         /// Id of the user
         /// </summary>
-        [JsonProperty("pid")]
-        public string Pid { get; set; }
+        [JsonProperty("puid")]
+        public string Puid { get; set; }
     }
 }

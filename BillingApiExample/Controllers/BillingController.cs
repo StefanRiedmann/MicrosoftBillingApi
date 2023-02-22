@@ -34,7 +34,7 @@ namespace BillingApiExample.Controllers
             // have to configure your users account accordingly
             // ...
 
-            await service.ActivateSubscription(subscription.SubscriptionId);
+            await service.ActivateSubscription(subscription.SubscriptionId, subscription.PlanId, subscription.Quantity);
         }
 
         [HttpGet("[action]")]
@@ -51,7 +51,14 @@ namespace BillingApiExample.Controllers
             // Alternative: Get the full operation for more details
             var operation = await service.GetOperationStatus(payload.SubscriptionId, payload.OperationId);
 
-            await service.UpdateOperationStatus(payload.SubscriptionId, payload.OperationId, "Success");
+            // Only call UpdateOperationStatus for Reinstate, ChangePlan and ChangeQuantity, otherwise you will get an error from the SaaS API
+            if (payload.Action == MicrosoftOperationAction.Reinstate ||
+                payload.Action == MicrosoftOperationAction.ChangePlan ||
+                payload.Action == MicrosoftOperationAction.ChangeQuantity)
+            {
+                // Update the subscription
+                await service.UpdateOperationStatus(payload.SubscriptionId, payload.OperationId, "Success");
+            }
         }
     }
 }

@@ -39,10 +39,20 @@ namespace BillingApiSdk.Services
         Task<MicrosoftSubscription> GetSubscription(string subscriptionId);
 
         /// <summary>
+        /// Use this call to update the plan, the user count (quantity), or both.
+        /// </summary>
+        Task PatchSubscription(string subscriptionId, string planId, int quantity);
+
+        /// <summary>
+        /// Unsubscribe and delete the specified subscription.
+        /// </summary>
+        Task DeleteSubscription(string subscriptionId);
+
+        /// <summary>
         /// Once the SaaS account is configured for an end customer, the publisher must call the Activate Subscription API on Microsoft side. 
         /// The customer will not be billed unless this API call is successful.
         /// </summary>
-        Task ActivateSubscription(string subscriptionId);
+        Task ActivateSubscription(string subscriptionId, string planId, int quantity);
 
         /// <summary>
         /// Get list of the pending operations for the specified SaaS subscription. Returned operations should be acknowledged 
@@ -70,9 +80,11 @@ namespace BillingApiSdk.Services
 
     public class BillingApiService : IBillingApiService
     {
+        private const string apiBaseUrl = "https://marketplaceapi.microsoft.com/api/saas/subscriptions";
         private const string mockApiVersion = "2018-09-15";
         private const string productionApiVersion = "2018-08-31";
-        private BillingApiConfiguration config;
+
+        private readonly BillingApiConfiguration config;
 
         public BillingApiService(BillingApiConfiguration config)
         {
@@ -88,8 +100,7 @@ namespace BillingApiSdk.Services
         {
             var api = GetApiVersion(marketplaceToken, null);
             using var httpClient = await GetMsSaasSubscriptionClient(null, null, !api.isMock, marketplaceToken);
-            //Post https://marketplaceapi.microsoft.com/api/saas/subscriptions/resolve?api-version=<ApiVersion>
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/resolve?api-version={api.apiVersion}");
+            var uri = new Uri($"{apiBaseUrl}/resolve?api-version={api.apiVersion}");
             var msg = new HttpRequestMessage()
             {
                 RequestUri = uri,
@@ -110,7 +121,7 @@ namespace BillingApiSdk.Services
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error deserializaing MicrosoftSubscription", ex);
+                throw new ApplicationException("Error deserializing MicrosoftSubscription", ex);
             }
         }
 
@@ -118,7 +129,7 @@ namespace BillingApiSdk.Services
         {
             var apiVersion = mock ? mockApiVersion : productionApiVersion;
             using var httpClient = await GetMsSaasSubscriptionClient(null, null, !mock);
-            var link = $"https://marketplaceapi.microsoft.com/api/saas/subscriptions/?api-version={apiVersion}";
+            var link = $"{apiBaseUrl}/?api-version={apiVersion}";
 
             var result = new List<MicrosoftSubscription>();
             while (!string.IsNullOrEmpty(link))
@@ -145,7 +156,7 @@ namespace BillingApiSdk.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new ApplicationException($"Error deserializaing list of MicrosoftSubscription, link: {link}", ex);
+                    throw new ApplicationException($"Error deserializing list of MicrosoftSubscription, link: {link}", ex);
                 }
             }
             if (mock)
@@ -164,7 +175,7 @@ namespace BillingApiSdk.Services
         {
             var api = GetApiVersion(null, subscriptionId);
             using var httpClient = await GetMsSaasSubscriptionClient(null, null, !api.isMock);
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/{subscriptionId}?api-version={api.apiVersion}");
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}?api-version={api.apiVersion}");
 
             var msg = new HttpRequestMessage()
             {
@@ -192,21 +203,47 @@ namespace BillingApiSdk.Services
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error deserializaing MicrosoftSubscription", ex);
+                throw new ApplicationException("Error deserializing MicrosoftSubscription", ex);
             }
         }
 
-        public async Task ActivateSubscription(string subscriptionId)
+        public async Task DeleteSubscription(string subscriptionId)
         {
-            // Post https://marketplaceapi.microsoft.com/api/saas/subscriptions/<subscriptionId>/activate?api-version=<ApiVersion>
+            var api = GetApiVersion(null, subscriptionId);
+            using var httpClient = await GetMsSaasSubscriptionClient(null, null, !api.isMock);
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}?api-version={api.apiVersion}");
+
+            var msg = new HttpRequestMessage()
+            {
+                RequestUri = uri,
+                Method = HttpMethod.Delete
+            };
+            var response = await httpClient.SendAsync(msg);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException($"DeleteSubscription {response.StatusCode} - {responseString}");
+            }
+        }
+
+        public async Task ActivateSubscription(string subscriptionId, string planId, int quantity)
+        {
             // There is no mock api, and no response body
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/{subscriptionId}/activate?api-version={productionApiVersion}");
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}/activate?api-version={productionApiVersion}");
             using var httpClient = await GetMsSaasSubscriptionClient(null, null);
             var msg = new HttpRequestMessage()
             {
                 RequestUri = uri,
                 Method = HttpMethod.Post
             };
+            var body = new Dictionary<string, string>
+            {
+                { "planId", planId },
+                { "quantity", quantity.ToString() }
+            };
+            msg.Content = new StringContent(JsonConvert.SerializeObject(body), System.Text.Encoding.UTF8, "application/json");
+
             var response = await httpClient.SendAsync(msg);
             var responseString = await response.Content.ReadAsStringAsync();
 
@@ -216,11 +253,42 @@ namespace BillingApiSdk.Services
             }
         }
 
+        public async Task PatchSubscription(string subscriptionId, string planId, int quantity)
+        {
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}/activate?api-version={productionApiVersion}");
+            using var httpClient = await GetMsSaasSubscriptionClient(null, null);
+            var msg = new HttpRequestMessage()
+            {
+                RequestUri = uri,
+                Method = HttpMethod.Patch
+            };
+            var body = new Dictionary<string, string>
+            {
+                { "planId", planId },
+                { "quantity", quantity.ToString() }
+            };
+            msg.Content = new StringContent(JsonConvert.SerializeObject(body), System.Text.Encoding.UTF8, "application/json");
+
+            var response = await httpClient.SendAsync(msg);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApplicationException($"PatchSubscription {response.StatusCode} - {responseString}");
+            }
+        }
+
+        class GetPendingOperationsResult
+        {
+            public List<MicrosoftOperation> Operations { get; set; }
+            public string NextLink { get; set; }
+        }
+
         public async Task<List<MicrosoftOperation>> GetPendingOperations(string subscriptionId)
         {
             var api = GetApiVersion(null, subscriptionId);
             using var httpClient = await GetMsSaasSubscriptionClient(null, null, !api.isMock);
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/{subscriptionId}/operations?api-version={api.apiVersion}");
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}/operations?api-version={api.apiVersion}");
 
             var msg = new HttpRequestMessage()
             {
@@ -236,12 +304,18 @@ namespace BillingApiSdk.Services
             }
             try
             {
-                var result = JsonConvert.DeserializeObject<List<MicrosoftOperation>>(responseString);
-                return result;
+                // Response is different for mock and production
+                if (api.isMock)
+                {
+                    return JsonConvert.DeserializeObject<List<MicrosoftOperation>>(responseString);
+                }
+
+                var result = JsonConvert.DeserializeObject<GetPendingOperationsResult>(responseString);
+                return result.Operations;
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error deserializaing list of MicrosoftOperations", ex);
+                throw new ApplicationException("Error deserializing list of MicrosoftOperations: " + responseString, ex);
             }
         }
 
@@ -249,7 +323,7 @@ namespace BillingApiSdk.Services
         {
             var api = GetApiVersion(null, subscriptionId);
             using var httpClient = await GetMsSaasSubscriptionClient(null, null, !api.isMock);
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/{subscriptionId}/operations/{operationId}?api-version={api.apiVersion}");
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}/operations/{operationId}?api-version={api.apiVersion}");
 
             var msg = new HttpRequestMessage()
             {
@@ -271,47 +345,32 @@ namespace BillingApiSdk.Services
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error deserializaing MicrosoftOperation", ex);
+                throw new ApplicationException("Error deserializing MicrosoftOperation", ex);
             }
         }
 
         public async Task UpdateOperationStatus(string subscriptionId, string operationId, string status)
         {
             // There is no mock api, and no response body
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/{subscriptionId}/operations/{operationId}?api-version={productionApiVersion}");
+            var uri = new Uri($"{apiBaseUrl}/{subscriptionId}/operations/{operationId}?api-version={productionApiVersion}");
             using var httpClient = await GetMsSaasSubscriptionClient(null, null);
             var msg = new HttpRequestMessage()
             {
                 RequestUri = uri,
-                Method = HttpMethod.Post
+                Method = HttpMethod.Patch
             };
+            // Post status
+            var body = new Dictionary<string, string>
+            {
+                { "status", status }
+            };
+            msg.Content = new StringContent(JsonConvert.SerializeObject(body), System.Text.Encoding.UTF8, "application/json");
             var response = await httpClient.SendAsync(msg);
             var responseString = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 throw new ApplicationException($"UpdateOperationStatus {response.StatusCode} - {responseString}");
-            }
-        }
-
-        /// <summary>
-        /// Does not support mocking api
-        /// </summary>
-        /// <param name="status">Success or Failure</param>
-        /// <returns></returns>
-        public async Task UpdateOperation(string subscriptionId, string operationId, string status)
-        {
-            using var httpClient = await GetMsSaasSubscriptionClient(null, null);
-            var uri = new Uri($"https://marketplaceapi.microsoft.com/api/saas/subscriptions/{subscriptionId}/operations/{operationId}?api-version={productionApiVersion}");
-
-            var bodyStr = $"{{\"status\":\"{status}\"}}";
-            var content = new StringContent(bodyStr);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            var response = await httpClient.PostAsync(uri, content);
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                throw new ApplicationException($"UpdateOperation {response.StatusCode} - {responseString}");
             }
         }
 
@@ -404,7 +463,7 @@ namespace BillingApiSdk.Services
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("Error deserializaing MicrosoftTokenResponse", ex);
+                throw new ApplicationException("Error deserializing MicrosoftTokenResponse", ex);
             }
         }
     }
